@@ -1,27 +1,21 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{comicscript}[2020/10/07 Comic Script]
 
-% Options
+% Options ---------------------------------------------------------------------
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions\relax
 \LoadClass{article}
 
-% Packages
+% Packages --------------------------------------------------------------------
+\RequirePackage[margin=3cm]{geometry}
 \RequirePackage{xparse}
-\RequirePackage[utf8]{inputenc}
-\RequirePackage[T1]{fontenc}
-\RequirePackage[sfdefault,condensed]{cabin}
-\RequirePackage[margin=2cm]{geometry}
-\RequirePackage{titling}
 \RequirePackage{titlesec}
 \RequirePackage{fancyhdr}
 \RequirePackage{tabularx}
+\RequirePackage{fmtcount}
+\RequirePackage{xcolor}
 
-% Settings
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{3pt}
-
-% Commands and variables -------------------------------------------------------
+% Commands and settings -------------------------------------------------------
 
 % Variables for \maketitle and headers
 \def\@series{}
@@ -32,27 +26,39 @@
 \newcommand{\issue}[1]{\def\@issue{#1}}
 \newcommand{\theissue}{\@issue}
 
-% Sectioning commands
-\newcommand{\page}{\section}
-\NewDocumentCommand{\panel}{o}{%
-  \IfNoValueTF{#1}
-  {\paragraph{Panel X:}}
-  {\paragraph{Panel X (#1):}}
+\renewcommand{\maketitle}{
+  {
+    \begin{center}
+      {\Huge\bfseries\@series~\#\@issue~---~\@title}\\[1ex]
+      {\large Written by \@author}
+    \end{center}
+    \thispagestyle{empty}
+    \pagestyle{fancy}
+  }
 }
 
+\fancyhead{}
+\fancyhead[R]{\color{black!30}\MakeUppercase{\slshape\@series~\#\@issue~\textbullet~\@title~\textbullet~\@author}}
+\pagestyle{fancy}
+
+% Sectioning commands and styling
+% \renewcommand{\thesubsection}{\arabic{subsection}}
+\newcommand{\page}{\section{Page \Numberstring{section}}}
+\NewDocumentCommand{\panel}{o}{\subsection{Panel \arabic{subsection}\IfNoValueTF{#1}{}{ (#1)}}}
+
+\titleformat{\section}[hang]{\normalfont\Large\bfseries}{}{0pt}{}
+\titleformat{\subsection}[runin]{\normalfont\bfseries}{}{0pt}{}[:]
+
 % Lettering instruction commands
-\newcommand{\dialogue}[2]{
-  \begin{tabularx}{\textwidth}{p{0.03\textwidth}p{0.27\textwidth}X}
-    XX & \MakeUppercase{#1}: & #2
-  \end{tabularx}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newenvironment{lettering}
+  {\medskip\par\noindent\tabularx{\textwidth}{ R{0.05\textwidth} p{0.25\textwidth} X }}
+  {\endtabularx}
+\newcounter{letteringitem}[section]
+\NewDocumentCommand{\letteringitem}{ m o m }{
+  \stepcounter{letteringitem}
+  \arabic{letteringitem}. & \MakeUppercase{#1}\IfNoValueTF{#2}{}{ (\MakeUppercase{#2})}: & #3
 }
-\newcommand{\narration}[1]{
-  \begin{tabularx}{\textwidth}{p{0.03\textwidth}p{0.27\textwidth}X}
-    XX & NARRATION: & #1
-  \end{tabularx}
-}
-\newcommand{\sfx}[1]{
-  \begin{tabularx}{\textwidth}{p{0.03\textwidth}p{0.27\textwidth}X}
-    XX & SFX: & #1
-  \end{tabularx}
-}
+\NewDocumentCommand{\dialogue}{ m o m }{\letteringitem{#1}[#2]{#3}}
+\NewDocumentCommand{\narration}{ o m }{\letteringitem{NARRATION}[#1]{#2}}
+\NewDocumentCommand{\sfx}{ m }{\letteringitem{SFX}{#1}}
