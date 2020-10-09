@@ -7,10 +7,9 @@
 \LoadClass{article}
 
 % Packages --------------------------------------------------------------------
-\RequirePackage[margin=3cm]{geometry}
+\RequirePackage[margin=1in]{geometry}
 \RequirePackage{xparse}
-\RequirePackage{titlesec}
-\RequirePackage{fancyhdr}
+\RequirePackage[pagestyles]{titlesec}
 \RequirePackage{tabularx}
 \RequirePackage{fmtcount}
 \RequirePackage{xcolor}
@@ -33,13 +32,14 @@
       {\large Written by \@author}
     \end{center}
     \thispagestyle{empty}
-    \pagestyle{fancy}
   }
 }
 
-\fancyhead{}
-\fancyhead[R]{\color{black!30}\MakeUppercase{\slshape\@series~\#\@issue~\textbullet~\@title~\textbullet~\@author}}
-\pagestyle{fancy}
+\newpagestyle{main}{
+  \sethead{}{}{\color{black!30}\MakeUppercase{\small\slshape\@series~\#\@issue~\textbullet~\@title~\textbullet~\@author}}
+  \setfoot{}{}{}
+}
+\pagestyle{main}
 
 % Sectioning commands and styling
 % \renewcommand{\thesubsection}{\arabic{subsection}}
