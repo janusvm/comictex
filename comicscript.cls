@@ -53,7 +53,6 @@
   \gdef\@series{#1}
   \gdef\@issue{#2}
 }
-
 \renewcommand{\maketitle}{
   \ifcomicscript@titlepage
     \hspace{0pt}\vfill
@@ -64,7 +63,6 @@
     \@maketitle
   \fi
 }
-
 \renewcommand{\@maketitle}{
   \begin{center}
     \ifx\@series\empty
@@ -80,6 +78,9 @@
   \end{center}
   \thispagestyle{empty}
 }
+
+% Use \emph for bold italics, as it is common in comic lettering
+\renewcommand{\emph}[1]{\textit{\textbf{#1}}}
 
 \newpagestyle{main}{
   \sethead{}{}{
@@ -109,7 +110,7 @@
 \newcounter{letteringitem}[section]
 \NewDocumentCommand{\letteringitem}{ m o m }{
   \stepcounter{letteringitem}
-  \arabic{letteringitem}. & \MakeUppercase{#1}\IfNoValueTF{#2}{}{ (\MakeUppercase{#2})}: & #3
+  \arabic{letteringitem}. & \MakeUppercase{#1}\IfNoValueTF{#2}{}{ (\MakeUppercase{#2})}: & #3 \\
 }
 \NewDocumentCommand{\dialogue}{ m o m }{\letteringitem{#1}[#2]{#3}}
 \NewDocumentCommand{\narration}{ o m }{\letteringitem{NARRATION}[#1]{#2}}
