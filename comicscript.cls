@@ -1,9 +1,25 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{comicscript}[2020/10/07 Comic Script]
+\ProvidesClass{comicscript}[2020/10/09 Comic Script]
 
 % Options ---------------------------------------------------------------------
+% Is the script paged or not? This affects the numbering of panel labels
+\newif\ifcomicscript@unpaged
+\comicscript@unpagedfalse
+\DeclareOption{paged}{\comicscript@unpagedfalse}
+\DeclareOption{unpaged}{\comicscript@unpagedtrue}
+
+% Include a titlepage? This puts the output of \maketitle on its own page
+\newif\ifcomicscript@titlepage
+\comicscript@titlepagefalse
+\DeclareOption{titlepage}{\comicscript@titlepagetrue}
+\DeclareOption{notitlepage}{\comicscript@titlepagefalse}
+
+% Options passed to the article class
+\DeclareOption{twocolumn}{\OptionNotUsed}
+\DeclareOption{twoside}{\OptionNotUsed}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
-\ProcessOptions\relax
+
+\ProcessOptions*\relax
 \LoadClass{article}
 
 % Packages --------------------------------------------------------------------
@@ -15,35 +31,71 @@
 \RequirePackage{xcolor}
 
 % Commands and settings -------------------------------------------------------
+% Handle mutually exclusive options
+\ifcomicscript@unpaged
+  \renewcommand{\thesubsection}{\arabic{subsection}}
+\fi
+
+\AtBeginDocument{
+  \ifx\@title\empty
+    \ifx\@series\empty
+      \ClassError{comicscript}{Either \noexpand\title or \noexpand\series must be given}\@ehc
+    \fi
+  \fi
+}
 
 % Variables for \maketitle and headers
-\def\@series{}
-\newcommand{\series}[1]{\def\@series{#1}}
-\newcommand{\theseries}{\@series}
-
-\def\@issue{}
-\newcommand{\issue}[1]{\def\@issue{#1}}
-\newcommand{\theissue}{\@issue}
+\def\@author{\ClassError{comicscript}{No \noexpand\author given}\@ehc}
+\gdef\@title{}
+\gdef\@series{}
+\gdef\@issue{}
+\DeclareRobustCommand\series[2]{
+  \gdef\@series{#1}
+  \gdef\@issue{#2}
+}
 
 \renewcommand{\maketitle}{
-  {
-    \begin{center}
-      {\Huge\bfseries\@series~\#\@issue~---~\@title}\\[1ex]
-      {\large Written by \@author}
-    \end{center}
-    \thispagestyle{empty}
-  }
+  \ifcomicscript@titlepage
+    \hspace{0pt}\vfill
+    \@maketitle
+    \vfill\hspace{0pt}
+    \clearpage
+  \else
+    \@maketitle
+  \fi
+}
+
+\renewcommand{\@maketitle}{
+  \begin{center}
+    \ifx\@series\empty
+      {\Huge\bfseries\@title}
+    \else
+      \ifx\@title\empty
+        {\Huge\bfseries\@series~\#\@issue}
+      \else
+        {\Huge\bfseries\@series~\#\@issue~---~\@title}
+      \fi
+    \fi
+    \medskip\par{\large Written by \@author}\bigskip
+  \end{center}
+  \thispagestyle{empty}
 }
 
 \newpagestyle{main}{
-  \sethead{}{}{\color{black!30}\MakeUppercase{\small\slshape\@series~\#\@issue~\textbullet~\@title~\textbullet~\@author}}
+  \sethead{}{}{
+    \color{black!30}\MakeUppercase{%
+      \small\slshape%
+      \ifx\@series\empty\else{\@series~\#\@issue~\textbullet~}\fi%
+      \ifx\@title\empty\else{\@title~\textbullet~}\fi%
+      \@author
+    }
+  }
   \setfoot{}{}{}
 }
 \pagestyle{main}
 
 % Sectioning commands and styling
-% \renewcommand{\thesubsection}{\arabic{subsection}}
-\newcommand{\page}{\section{Page \Numberstring{section}}}
+\ifcomicscript@unpaged\else\newcommand{\page}{\section{Page \Numberstring{section}}}\fi
 \NewDocumentCommand{\panel}{o}{\subsection{Panel \arabic{subsection}\IfNoValueTF{#1}{}{ (#1)}}}
 
 \titleformat{\section}[hang]{\normalfont\Large\bfseries}{}{0pt}{}
